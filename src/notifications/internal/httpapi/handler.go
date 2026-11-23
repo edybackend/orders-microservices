@@ -21,7 +21,9 @@ type Lister interface {
 func NewHandler(store Lister, allowedOrigin string, logger *slog.Logger) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, _ *http.Request) {
-		w.Write([]byte("Healthy"))
+		if _, err := w.Write([]byte("Healthy")); err != nil {
+			logger.Error("write health response", "error", err)
+		}
 	})
 	mux.HandleFunc("GET /notifications", func(w http.ResponseWriter, r *http.Request) {
 		items, err := store.List(r.Context(), r.URL.Query().Get("orderId"), listLimit)

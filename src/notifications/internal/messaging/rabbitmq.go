@@ -37,13 +37,13 @@ func (c *Consumer) Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer c.closeLogged("connection", conn.Close)
 
 	ch, err := conn.Channel()
 	if err != nil {
 		return fmt.Errorf("open channel: %w", err)
 	}
-	defer ch.Close()
+	defer c.closeLogged("channel", ch.Close)
 
 	if err := c.declare(ch); err != nil {
 		return err
@@ -67,6 +67,13 @@ func (c *Consumer) Run(ctx context.Context) error {
 			}
 			c.handle(ctx, d)
 		}
+	}
+}
+
+// closeLogged closes a resource on shutdown. Already-closed resources are expected after a connection loss.
+func (c *Consumer) closeLogged(name string, closeFn func() error) {
+	if err := closeFn(); err != nil && !errors.Is(err, amqp.ErrClosed) {
+		c.Logger.Warn("close "+name, "error", err)
 	}
 }
 

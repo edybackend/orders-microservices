@@ -41,7 +41,11 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
-	defer store.Close()
+	defer func() {
+		if err := store.Close(); err != nil {
+			logger.Error("close store", "error", err)
+		}
+	}()
 
 	service := notification.NewService(store, time.Now)
 	consumer := &messaging.Consumer{

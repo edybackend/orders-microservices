@@ -4,6 +4,7 @@ package storage
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
@@ -36,8 +37,7 @@ func Open(ctx context.Context, path string) (*SQLite, error) {
 	}
 	db.SetMaxOpenConns(1) // SQLite allows a single writer; one connection avoids "database is locked"
 	if _, err := db.ExecContext(ctx, schema); err != nil {
-		db.Close()
-		return nil, fmt.Errorf("apply schema: %w", err)
+		return nil, errors.Join(fmt.Errorf("apply schema: %w", err), db.Close())
 	}
 	return &SQLite{db: db}, nil
 }
@@ -62,7 +62,7 @@ func (s *SQLite) Save(ctx context.Context, n notification.Notification) (bool, e
 }
 
 // List returns the newest notifications, optionally filtered by order id.
-func (s *SQLite) List(ctx context.Context, orderID string, limit int) ([]notification.Notification, error) {
+func (s *SQLite) List(ctx context.Context, orderID string, limit int) (_ []notification.Notification, err error) {
 	query := `SELECT id, event_id, order_id, kind, message, created_at FROM notifications`
 	args := []any{}
 	if orderID != "" {
@@ -76,7 +76,7 @@ func (s *SQLite) List(ctx context.Context, orderID string, limit int) ([]notific
 	if err != nil {
 		return nil, fmt.Errorf("query notifications: %w", err)
 	}
-	defer rows.Close()
+	defer func() { err = errors.Join(err, rows.Close()) }()
 
 	result := []notification.Notification{}
 	for rows.Next() {
