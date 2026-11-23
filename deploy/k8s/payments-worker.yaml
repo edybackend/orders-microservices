@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payments-worker
+  labels: { app: payments-worker }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: payments-worker }
+  template:
+    metadata:
+      labels: { app: payments-worker }
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: payments-worker
+          image: orders-microservices/payments-worker:local
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: RabbitMq__ConnectionString
+              valueFrom:
+                secretKeyRef: { name: rabbitmq-connection, key: dotnet }
+          resources:
+            requests: { cpu: 50m, memory: 96Mi }
+            limits: { memory: 192Mi }
+          volumeMounts:
+            - { name: data, mountPath: /app/data }
+      volumes:
+        - name: data
+          emptyDir: {}

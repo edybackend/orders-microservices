@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders-api
+  labels: { app: orders-api }
+spec:
+  # One replica: SQLite is a local file and the SSE broadcaster is in-memory (see README, "Scaling").
+  replicas: 1
+  selector:
+    matchLabels: { app: orders-api }
+  template:
+    metadata:
+      labels: { app: orders-api }
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: orders-api
+          image: orders-microservices/orders-api:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - { name: http, containerPort: 8080 }
+          env:
+            - name: RabbitMq__ConnectionString
+              valueFrom:
+                secretKeyRef: { name: rabbitmq-connection, key: dotnet }
+          readinessProbe:
+            httpGet: { path: /health, port: http }
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /health, port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits: { memory: 256Mi }
+          volumeMounts:
+            - { name: data, mountPath: /app/data }
+      volumes:
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orders-api
+spec:
+  selector: { app: orders-api }
+  ports:
+    - { name: http, port: 8080, targetPort: http }

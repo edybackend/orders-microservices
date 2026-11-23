@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: orders-demo
+resources:
+  - namespace.yaml
+  - config.yaml
+  - rabbitmq.yaml
+  - orders-api.yaml
+  - payments-worker.yaml
+  - notifications.yaml
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: orders-microservices

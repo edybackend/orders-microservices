@@ -1,0 +1,9 @@
+# Demo credentials (RabbitMQ default user). In a real cluster this comes from a secret manager.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rabbitmq-connection
+type: Opaque
+stringData:
+  dotnet: amqp://guest:guest@rabbitmq:5672
+  go: amqp://guest:guest@rabbitmq:5672/
