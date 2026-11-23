@@ -1,6 +1,6 @@
 using System.Text.Json;
-using Microsoft.Extensions.DependencyInjection;
 using Ecommerce.Contracts;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Ecommerce.Messaging;
 

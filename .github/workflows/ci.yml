@@ -22,6 +22,7 @@ jobs:
         with:
           global-json-file: global.json
       - run: dotnet restore
+      - run: dotnet format --verify-no-changes --no-restore
       # Warnings are errors (Directory.Build.props), so analyzers and code style gate the build.
       - run: dotnet build --no-restore -c Release
       # Unit, integration (real API + SQLite) and architecture tests.

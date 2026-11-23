@@ -1,7 +1,7 @@
 using System.Text.Json;
+using Ecommerce.Contracts;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
-using Ecommerce.Contracts;
 
 namespace Ecommerce.Messaging;
 
