@@ -1,0 +1,64 @@
+name: orders-microservices
+
+services:
+  rabbitmq:
+    image: rabbitmq:4-management
+    ports:
+      - "5672:5672"
+      - "15672:15672" # management UI: http://localhost:15672 (guest / guest)
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  orders-api:
+    build:
+      context: .
+      dockerfile: src/Orders/Orders.Api/Dockerfile
+    image: orders-microservices/orders-api:local
+    environment:
+      RabbitMq__ConnectionString: amqp://guest:guest@rabbitmq:5672
+    ports:
+      - "8080:8080"
+    volumes:
+      - orders-data:/app/data
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  payments-worker:
+    build:
+      context: .
+      dockerfile: src/Payments/Payments.Worker/Dockerfile
+    image: orders-microservices/payments-worker:local
+    environment:
+      RabbitMq__ConnectionString: amqp://guest:guest@rabbitmq:5672
+    volumes:
+      - payments-data:/app/data
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  notifications:
+    build:
+      context: src/notifications
+    image: orders-microservices/notifications:local
+    environment:
+      AMQP_URL: amqp://guest:guest@rabbitmq:5672/
+      ALLOWED_ORIGIN: http://localhost:8080
+    ports:
+      - "8081:8081"
+    volumes:
+      - notifications-data:/app/data
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  orders-data:
+  payments-data:
+  notifications-data:
