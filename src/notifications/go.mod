@@ -3,9 +3,9 @@ module github.com/edybackend/orders-microservices/notifications
 go 1.27.4
 
 require (
-	github.com/rabbitmq/amqp091-go v1.17.0
+	github.com/rabbitmq/amqp091-go v1.16.0
 	golang.org/x/sync v0.25.0
-	modernc.org/sqlite v1.63.0
+	modernc.org/sqlite v1.62.0
 )
 
 require (
