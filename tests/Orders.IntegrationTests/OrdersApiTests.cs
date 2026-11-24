@@ -69,6 +69,24 @@ public class OrdersApiTests(OrdersApiFactory factory) : IClassFixture<OrdersApiF
         Assert.Equal("Limit exceeded", order.RejectionReason);
     }
 
+    [Fact]
+    public async Task Malformed_json_returns_400_not_500()
+    {
+        using var body = new StringContent("{ not json", System.Text.Encoding.UTF8, "application/json");
+
+        var response = await _client.PostAsync("/api/orders", body, TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Unknown_api_route_is_404_not_the_spa_page()
+    {
+        var response = await _client.GetAsync("/api/does-not-exist", TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
     private sealed record CreatedOrder(Guid Id);
 
     private sealed record OrderView(Guid Id, string Status, decimal Total, string? RejectionReason, IReadOnlyList<OrderLineView> Items);

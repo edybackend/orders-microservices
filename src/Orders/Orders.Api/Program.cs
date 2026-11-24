@@ -21,7 +21,14 @@ var app = builder.Build();
 
 await app.Services.MigrateOrdersDatabaseAsync();
 
-app.UseExceptionHandler();
+// Malformed JSON raises BadHttpRequestException, which carries its own 400.
+// Without the selector the exception handler would turn it into a 500 in Development.
+app.UseExceptionHandler(new ExceptionHandlerOptions
+{
+    StatusCodeSelector = exception => exception is BadHttpRequestException badRequest
+        ? badRequest.StatusCode
+        : StatusCodes.Status500InternalServerError,
+});
 app.UseStatusCodePages();
 app.UseDefaultFiles();
 app.UseStaticFiles();
@@ -29,6 +36,8 @@ app.UseStaticFiles();
 app.MapOpenApi();
 app.MapHealthChecks("/health");
 app.MapOrderEndpoints();
+// Unknown /api routes are 404 problems; every other unknown path is a UI route and gets index.html.
+app.MapFallback("/api/{**path}", () => TypedResults.Problem(statusCode: StatusCodes.Status404NotFound));
 app.MapFallbackToFile("index.html");
 
 await app.RunAsync();
