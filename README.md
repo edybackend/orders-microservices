@@ -7,8 +7,6 @@ An event-driven order flow split into three services that talk only through Rabb
 **Orders** (.NET, Clean Architecture + CQRS), **Payments** (.NET worker) and **Notifications** (Go).
 A React UI shows each order moving from *Pending* to *Paid* or *Rejected* in real time.
 
-Small on purpose: it can be read in about 15 minutes and started with one command.
-
 ## Quick start
 
 Requirements: Docker.
@@ -113,16 +111,9 @@ kubectl -n orders-demo port-forward svc/notifications 8081:8081
 - **Single API instance.** SQLite files and the in-memory SSE broadcaster assume one replica. Scaling out would mean a server database and a backplane (for example Redis pub/sub).
 - **Demo credentials.** RabbitMQ uses the default `guest` user. A real deployment would read them from a secret manager.
 
-## AI-Assisted Engineering
+## Working with an AI agent
 
-This project was built with Claude Code under explicit engineering controls:
-
-- **Project rules** ([`CLAUDE.md`](CLAUDE.md)) define the architecture, conventions and boundaries the agent must follow.
-- **Hooks** ([`.claude/settings.json`](.claude/settings.json)) format every change, block edits to secrets and generated files, and run the quality gates before a task is considered done.
-- **Spec-first**: each feature starts as a spec in [`specs/`](specs) with acceptance criteria.
-- **Same quality gates for every line**: CI enforces warnings as errors, formatting, unit/integration/architecture tests, linting and secret scanning.
-
-I own the architecture and review every change.
+I build with an AI coding agent, but inside rails I set up first. [`CLAUDE.md`](CLAUDE.md) holds the rules of this codebase (service boundaries, CQRS, idempotent consumers), and the hooks in [`.claude/`](.claude) refuse edits to secrets and generated files and run the same gates as CI before any task counts as done. Features start as a spec in [`specs/`](specs).
 
 ## License
 

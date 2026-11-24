@@ -7,8 +7,6 @@ Um fluxo de pedidos orientado a eventos, dividido em três serviços que convers
 **Orders** (.NET, Clean Architecture + CQRS), **Payments** (worker .NET) e **Notifications** (Go).
 Uma interface React mostra cada pedido passando de *Pending* para *Paid* ou *Rejected* em tempo real.
 
-Pequeno de propósito: dá para ler em cerca de 15 minutos e subir com um comando.
-
 ## Como rodar
 
 Requisito: Docker.
@@ -75,16 +73,9 @@ kubectl -n orders-demo port-forward svc/notifications 8081:8081
 - **Uma instância da API.** Os arquivos SQLite e o broadcaster SSE em memória assumem uma réplica. Escalar exigiria um banco servidor e um backplane (por exemplo, Redis pub/sub).
 - **Credenciais de demonstração.** O RabbitMQ usa o usuário padrão `guest`. Em produção, viriam de um cofre de segredos.
 
-## Engenharia assistida por IA
+## Trabalhando com um agente de IA
 
-Este projeto foi construído com o Claude Code sob controles explícitos de engenharia:
-
-- **Regras do projeto** ([`CLAUDE.md`](CLAUDE.md)) definem a arquitetura, as convenções e os limites que o agente deve seguir.
-- **Hooks** ([`.claude/settings.json`](.claude/settings.json)) formatam cada alteração, bloqueiam edição de segredos e arquivos gerados e rodam os portões de qualidade antes de uma tarefa ser considerada pronta.
-- **Spec-first**: cada funcionalidade começa como uma especificação em [`specs/`](specs) com critérios de aceite.
-- **Os mesmos portões para cada linha**: o CI exige aviso como erro, formatação, testes de unidade/integração/arquitetura, lint e varredura de segredos.
-
-A arquitetura é minha e eu reviso cada alteração.
+Desenvolvo com um agente de IA, mas dentro de trilhos que eu defino antes. O [`CLAUDE.md`](CLAUDE.md) guarda as regras deste código (fronteiras entre serviços, CQRS, consumidores idempotentes), e os hooks em [`.claude/`](.claude) recusam edição de segredos e arquivos gerados e rodam os mesmos portões do CI antes de qualquer tarefa ser dada como pronta. Cada funcionalidade começa como especificação em [`specs/`](specs).
 
 ## Licença
 
